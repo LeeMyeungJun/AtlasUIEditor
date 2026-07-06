@@ -1,0 +1,370 @@
+{
+  "RootNode": {
+    "Id": "game_canvas",
+    "Name": "GameCanvas",
+    "Type": "Canvas",
+    "X": 0,
+    "Y": 0,
+    "Width": 1080,
+    "Height": 1920,
+    "AtlasRegion": "",
+    "Children": [
+      {
+        "Id": "top_ui",
+        "Name": "TopUI",
+        "Type": "Panel",
+        "X": 0,
+        "Y": 0,
+        "Width": 1080,
+        "Height": 456,
+        "ColorHex": "#FFF8E6",
+        "AtlasRegion": "",
+        "Children": [
+          {
+            "Id": "shuffle_item",
+            "Name": "ShuffleItem",
+            "Type": "Button",
+            "X": 40,
+            "Y": 38,
+            "Width": 140,
+            "Height": 140,
+            "AtlasRegion": "Frame 1935650133.png",
+            "FitMode": "Stretch",
+            "Children": [
+              {
+                "Id": "shuffle_icon",
+                "Name": "ShuffleIcon",
+                "Type": "Image",
+                "X": 5,
+                "Y": 5,
+                "Width": 130,
+                "Height": 130,
+                "AtlasRegion": "Frame 1935650140.png",
+                "FitMode": "Stretch",
+                "Children": []
+              }
+            ]
+          },
+          {
+            "Id": "erase_item",
+            "Name": "EraseItem",
+            "Type": "Button",
+            "X": 220,
+            "Y": 38,
+            "Width": 140,
+            "Height": 140,
+            "AtlasRegion": "Frame 1935650133.png",
+            "FitMode": "Stretch",
+            "Children": []
+          },
+          {
+            "Id": "shuffle_label",
+            "Name": "ShuffleLabel",
+            "Type": "Image",
+            "X": 67,
+            "Y": 182,
+            "Width": 86,
+            "Height": 39,
+            "AtlasRegion": "Frame 1935650131.png",
+            "FitMode": "Stretch",
+            "Children": []
+          },
+          {
+            "Id": "erase_label",
+            "Name": "EraseLabel",
+            "Type": "Image",
+            "X": 247,
+            "Y": 182,
+            "Width": 86,
+            "Height": 39,
+            "AtlasRegion": "Frame 1935650130.png",
+            "FitMode": "Stretch",
+            "Children": []
+          },
+          {
+            "Id": "score_label",
+            "Name": "ScoreLabel",
+            "Type": "Image",
+            "X": 510,
+            "Y": 25,
+            "Width": 71,
+            "Height": 47,
+            "AtlasRegion": "Frame 1935650132.png",
+            "FitMode": "Stretch",
+            "Children": []
+          },
+          {
+            "Id": "score_text",
+            "Name": "ScoreText",
+            "Type": "Text",
+            "X": 470,
+            "Y": 75,
+            "Width": 150,
+            "Height": 47,
+            "AtlasRegion": "",
+            "Children": []
+          },
+          {
+            "Id": "menu_button",
+            "Name": "MenuButton",
+            "Type": "Button",
+            "X": 825,
+            "Y": 18,
+            "Width": 190,
+            "Height": 70,
+            "AtlasRegion": "Frame 1935650153.png",
+            "FitMode": "NineSlice",
+            "SliceLeft": 35,
+            "SliceRight": 35,
+            "SliceTop": 0,
+            "SliceBottom": 0,
+            "Children": []
+          },
+          {
+            "Id": "next_pig_panel",
+            "Name": "NextPigPanel",
+            "Type": "Panel",
+            "X": 900,
+            "Y": 112,
+            "Width": 150,
+            "Height": 220,
+            "AtlasRegion": "",
+            "Children": [
+              {
+                "Id": "next_pig_ring",
+                "Name": "NextPigRing",
+                "Type": "Image",
+                "X": 0,
+                "Y": 0,
+                "Width": 148,
+                "Height": 148,
+                "AtlasRegion": "Frame 1935650139.png",
+                "FitMode": "Stretch",
+                "Children": []
+              },
+              {
+                "Id": "next_pig_icon",
+                "Name": "NextPigIcon",
+                "Type": "Image",
+                "X": 9,
+                "Y": 9,
+                "Width": 130,
+                "Height": 130,
+                "AtlasRegion": "Frame 1935650141.png",
+                "FitMode": "Stretch",
+                "Children": []
+              },
+              {
+                "Id": "next_label",
+                "Name": "NextLabel",
+                "Type": "Image",
+                "X": 33,
+                "Y": 155,
+                "Width": 84,
+                "Height": 39,
+                "AtlasRegion": "Frame 1935650134.png",
+                "FitMode": "Stretch",
+                "Children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Id": "game_area",
+        "Name": "GameArea",
+        "Type": "Panel",
+        "X": 0,
+        "Y": 456,
+        "Width": 1080,
+        "Height": 1257,
+        "ColorHex": "#FCEDC6",
+        "AtlasRegion": "",
+        "Children": [
+          {
+            "Id": "background_image",
+            "Name": "BackgroundImage",
+            "Type": "Image",
+            "X": 60,
+            "Y": 754,
+            "Width": 960,
+            "Height": 503,
+            "AtlasRegion": "Frame 1935650074.png",
+            "FitMode": "Stretch",
+            "Children": []
+          },
+          {
+            "Id": "left_border_line",
+            "Name": "LeftBorderLine",
+            "Type": "Image",
+            "X": 0,
+            "Y": 0,
+            "Width": 10,
+            "Height": 1257,
+            "AtlasRegion": "Frame 1935650077.png",
+            "FitMode": "Stretch",
+            "Children": []
+          },
+          {
+            "Id": "right_border_line",
+            "Name": "RightBorderLine",
+            "Type": "Image",
+            "X": 1070,
+            "Y": 0,
+            "Width": 10,
+            "Height": 1257,
+            "AtlasRegion": "Frame 1935650077.png",
+            "FitMode": "Stretch",
+            "Children": []
+          }
+        ]
+      },
+      {
+        "Id": "bottom_ui",
+        "Name": "BottomUI",
+        "Type": "Panel",
+        "X": 0,
+        "Y": 1713,
+        "Width": 1080,
+        "Height": 207,
+        "ColorHex": "#FDB871",
+        "AtlasRegion": "",
+        "Children": [
+          {
+            "Id": "pause_button",
+            "Name": "PauseButton",
+            "Type": "Button",
+            "X": 20,
+            "Y": 20,
+            "Width": 160,
+            "Height": 160,
+            "AtlasRegion": "버튼.png",
+            "FitMode": "Stretch",
+            "Children": [
+              {
+                "Id": "pause_icon",
+                "Name": "PauseIcon",
+                "Type": "Image",
+                "X": 55,
+                "Y": 30,
+                "Width": 50,
+                "Height": 50,
+                "AtlasRegion": "Frame 1935650081.png",
+                "FitMode": "Stretch",
+                "Children": []
+              }
+            ]
+          },
+          {
+            "Id": "pig_queue_1",
+            "Name": "PigQueue1",
+            "Type": "Image",
+            "X": 195,
+            "Y": 52,
+            "Width": 100,
+            "Height": 100,
+            "AtlasRegion": "Frame 1935650140.png",
+            "FitMode": "FitHeight",
+            "Children": []
+          },
+          {
+            "Id": "pig_queue_2",
+            "Name": "PigQueue2",
+            "Type": "Image",
+            "X": 295,
+            "Y": 52,
+            "Width": 100,
+            "Height": 100,
+            "AtlasRegion": "Frame 1935649725.png",
+            "FitMode": "FitHeight",
+            "Children": []
+          },
+          {
+            "Id": "pig_queue_3",
+            "Name": "PigQueue3",
+            "Type": "Image",
+            "X": 395,
+            "Y": 52,
+            "Width": 100,
+            "Height": 100,
+            "AtlasRegion": "Frame 1935649726.png",
+            "FitMode": "FitHeight",
+            "Children": []
+          },
+          {
+            "Id": "pig_queue_4",
+            "Name": "PigQueue4",
+            "Type": "Image",
+            "X": 495,
+            "Y": 52,
+            "Width": 100,
+            "Height": 100,
+            "AtlasRegion": "Frame 1935649727.png",
+            "FitMode": "FitHeight",
+            "Children": []
+          },
+          {
+            "Id": "pig_queue_5",
+            "Name": "PigQueue5",
+            "Type": "Image",
+            "X": 595,
+            "Y": 52,
+            "Width": 100,
+            "Height": 100,
+            "AtlasRegion": "Frame 1935649717.png",
+            "FitMode": "FitHeight",
+            "Children": []
+          },
+          {
+            "Id": "pig_queue_6",
+            "Name": "PigQueue6",
+            "Type": "Image",
+            "X": 695,
+            "Y": 52,
+            "Width": 100,
+            "Height": 100,
+            "AtlasRegion": "Frame 1935649718.png",
+            "FitMode": "FitHeight",
+            "Children": []
+          },
+          {
+            "Id": "pig_queue_7",
+            "Name": "PigQueue7",
+            "Type": "Image",
+            "X": 795,
+            "Y": 52,
+            "Width": 100,
+            "Height": 100,
+            "AtlasRegion": "Frame 1935649719.png",
+            "FitMode": "FitHeight",
+            "Children": []
+          },
+          {
+            "Id": "pig_queue_8",
+            "Name": "PigQueue8",
+            "Type": "Image",
+            "X": 895,
+            "Y": 52,
+            "Width": 100,
+            "Height": 100,
+            "AtlasRegion": "Frame 1935649720.png",
+            "FitMode": "FitHeight",
+            "Children": []
+          },
+          {
+            "Id": "event_banner",
+            "Name": "EventBanner",
+            "Type": "Text",
+            "X": 780,
+            "Y": 3,
+            "Width": 300,
+            "Height": 45,
+            "ColorHex": "#FF0084",
+            "AtlasRegion": "",
+            "Children": []
+          }
+        ]
+      }
+    ]
+  }
+}

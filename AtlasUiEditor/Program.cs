@@ -34,11 +34,57 @@ namespace AtlasUIEditor
     internal static class Program
     {
         [STAThread]
-        private static void Main()
+        private static void Main(string[] args)
         {
+            if (args.Length > 0 && args[0] == "--selftest")
+            {
+                SpriteFitSelfTest.Run();
+                return;
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
+        }
+    }
+
+    // 9-slice/fit 렌더링 로직 자가 점검. GUI 없이 `dotnet run --project AtlasUiEditor -- --selftest`
+    // 로 실행 가능. 실패 시 예외를 던져 콘솔 종료 코드로 알 수 있다.
+    internal static class SpriteFitSelfTest
+    {
+        public static void Run()
+        {
+            using var src = new Bitmap(30, 20);
+            using (var sg = Graphics.FromImage(src))
+            {
+                sg.Clear(Color.Red);
+                sg.FillRectangle(Brushes.Blue, 0, 0, 8, 8); // 좌상단 모서리 마커
+            }
+
+            // NineSlice: 모서리(8px)는 늘어나지 않고 원본 픽셀을 그대로 유지해야 한다.
+            using (var dest = new Bitmap(100, 60))
+            using (var g = Graphics.FromImage(dest))
+            {
+                CanvasPanel.DrawNineSlice(g, src, new RectangleF(0, 0, 100, 60), 8, 8, 8, 8);
+                if (dest.GetPixel(2, 2) != src.GetPixel(2, 2))
+                    throw new Exception("SpriteFitSelfTest 실패: NineSlice 모서리 픽셀이 보존되지 않음");
+                if (dest.GetPixel(50, 30) == Color.FromArgb(0, 0, 0, 0))
+                    throw new Exception("SpriteFitSelfTest 실패: NineSlice 중앙이 그려지지 않음");
+            }
+
+            // FitHeight: 높이는 rect에 꽉 차고, 비율 유지로 중앙 정렬되어 좌우에 여백이 생겨야 한다.
+            using (var dest = new Bitmap(100, 40))
+            using (var g = Graphics.FromImage(dest))
+            {
+                g.Clear(Color.Transparent);
+                CanvasPanel.DrawFitHeight(g, src, new RectangleF(0, 0, 100, 40));
+                if (dest.GetPixel(0, 20) != Color.FromArgb(0, 0, 0, 0))
+                    throw new Exception("SpriteFitSelfTest 실패: FitHeight가 가로 중앙 정렬되지 않음(좌측 여백 없음)");
+                if (dest.GetPixel(50, 20) == Color.FromArgb(0, 0, 0, 0))
+                    throw new Exception("SpriteFitSelfTest 실패: FitHeight 중앙에 스프라이트가 그려지지 않음");
+            }
+
+            Console.WriteLine("SpriteFitSelfTest OK");
         }
     }
 
@@ -48,6 +94,21 @@ namespace AtlasUIEditor
     //    실제 게임 export 스타일(AtlasRegion, Type: Canvas/Panel/Button/Text/Image) 모두 지원.
     //  - 두 스키마를 동시에 필드로 갖고, 편집 시(Sprite) 서로 동기화하여 호환성을 유지한다.
     // =================================================================================
+    // 이미지 확장 방식 (Godot 4.7 export 시 그대로 대응됨)
+    //  Stretch   : 전체 채우기 - 비율 무시하고 영역에 꽉 채움 (기존 기본 동작)
+    //  NineSlice : 9-slice - 모서리(Slice*)는 고정 크기로 유지하고 중앙/모서리 사이만 늘림
+    //              (Godot NinePatchRect의 patch_margin_left/top/right/bottom과 동일 개념)
+    //  FitHeight : 상하 기준 fit - 높이를 영역에 맞추고 비율 유지, 가로 중앙 정렬 (좌우로 넘치거나 남을 수 있음)
+    //  FitWidth  : 좌우 기준 fit - 너비를 영역에 맞추고 비율 유지, 세로 중앙 정렬 (상하로 넘치거나 남을 수 있음)
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum ImageFitMode
+    {
+        Stretch,
+        NineSlice,
+        FitHeight,
+        FitWidth
+    }
+
     public class UINode
     {
         public string Id { get; set; } = "node_" + Guid.NewGuid().ToString("N").Substring(0, 8);
@@ -65,6 +126,15 @@ namespace AtlasUIEditor
 
         public string ImageUrl { get; set; } = "";     // base_format.json 호환 필드
         public string AtlasRegion { get; set; } = "";  // 실제 게임 export JSON 호환 필드 (Atlas.json의 name)
+
+        public ImageFitMode FitMode { get; set; } = ImageFitMode.Stretch;
+
+        // NineSlice 전용: 소스 스프라이트 기준 여백(px). Godot NinePatchRect의
+        // patch_margin_left/top/right/bottom에 그대로 대입하면 된다.
+        public int SliceLeft { get; set; }
+        public int SliceRight { get; set; }
+        public int SliceTop { get; set; }
+        public int SliceBottom { get; set; }
 
         public List<UINode> Children { get; set; } = new List<UINode>();
 
@@ -213,6 +283,41 @@ namespace AtlasUIEditor
             }
         }
 
+        [Category("외관"), Description("이미지 확장 방식: Stretch=전체채우기, NineSlice=9-slice, FitHeight=상하기준, FitWidth=좌우기준")]
+        public ImageFitMode FitMode
+        {
+            get => _node.FitMode;
+            set { _node.FitMode = value; _canvas.Invalidate(); }
+        }
+
+        [Category("9-Slice"), Description("NineSlice 모드 전용. Godot patch_margin_left와 동일 (원본 스프라이트 기준 px)")]
+        public int SliceLeft
+        {
+            get => _node.SliceLeft;
+            set { _node.SliceLeft = Math.Max(0, value); _canvas.Invalidate(); }
+        }
+
+        [Category("9-Slice"), Description("NineSlice 모드 전용. Godot patch_margin_right와 동일 (원본 스프라이트 기준 px)")]
+        public int SliceRight
+        {
+            get => _node.SliceRight;
+            set { _node.SliceRight = Math.Max(0, value); _canvas.Invalidate(); }
+        }
+
+        [Category("9-Slice"), Description("NineSlice 모드 전용. Godot patch_margin_top와 동일 (원본 스프라이트 기준 px)")]
+        public int SliceTop
+        {
+            get => _node.SliceTop;
+            set { _node.SliceTop = Math.Max(0, value); _canvas.Invalidate(); }
+        }
+
+        [Category("9-Slice"), Description("NineSlice 모드 전용. Godot patch_margin_bottom와 동일 (원본 스프라이트 기준 px)")]
+        public int SliceBottom
+        {
+            get => _node.SliceBottom;
+            set { _node.SliceBottom = Math.Max(0, value); _canvas.Invalidate(); }
+        }
+
         private void RefreshTreeText()
         {
             if (_node.TreeNode != null)
@@ -331,7 +436,7 @@ namespace AtlasUIEditor
 
             if (sprite != null)
             {
-                g.DrawImage(sprite, rect);
+                DrawSprite(g, sprite, rect, node);
             }
             else if (!string.IsNullOrEmpty(node.ColorHex))
             {
@@ -365,6 +470,80 @@ namespace AtlasUIEditor
 
             foreach (var child in node.Children)
                 DrawNode(g, child, absX + child.X, absY + child.Y);
+        }
+
+        // node.FitMode에 따라 스프라이트를 rect 영역에 그린다. Godot 4.7의 TextureRect
+        // stretch mode / NinePatchRect와 1:1 대응되도록 설계됨 (내보낸 FitMode/Slice* 값을
+        // Godot 쪽에서 그대로 읽어 동일하게 재현할 수 있음).
+        internal static void DrawSprite(Graphics g, Bitmap sprite, RectangleF rect, UINode node)
+        {
+            switch (node.FitMode)
+            {
+                case ImageFitMode.NineSlice:
+                    DrawNineSlice(g, sprite, rect, node.SliceLeft, node.SliceRight, node.SliceTop, node.SliceBottom);
+                    break;
+                case ImageFitMode.FitHeight:
+                    DrawFitHeight(g, sprite, rect);
+                    break;
+                case ImageFitMode.FitWidth:
+                    DrawFitWidth(g, sprite, rect);
+                    break;
+                default:
+                    g.DrawImage(sprite, rect);
+                    break;
+            }
+        }
+
+        // 상하 기준 fit: 높이를 rect에 맞추고 비율을 유지한 채 가로 중앙 정렬.
+        internal static void DrawFitHeight(Graphics g, Bitmap sprite, RectangleF rect)
+        {
+            if (sprite.Height <= 0) return;
+            float scale = rect.Height / sprite.Height;
+            float w = sprite.Width * scale;
+            g.DrawImage(sprite, new RectangleF(rect.X + (rect.Width - w) / 2f, rect.Y, w, rect.Height));
+        }
+
+        // 좌우 기준 fit: 너비를 rect에 맞추고 비율을 유지한 채 세로 중앙 정렬.
+        internal static void DrawFitWidth(Graphics g, Bitmap sprite, RectangleF rect)
+        {
+            if (sprite.Width <= 0) return;
+            float scale = rect.Width / sprite.Width;
+            float h = sprite.Height * scale;
+            g.DrawImage(sprite, new RectangleF(rect.X, rect.Y + (rect.Height - h) / 2f, rect.Width, h));
+        }
+
+        // 9-slice: 모서리(left/right/top/bottom)는 원본 픽셀 크기 그대로 유지하고,
+        // 가장자리는 한 축으로만, 중앙은 양 축으로 늘려서 그린다. 여백이 0인 축은
+        // 자동으로 생략되어 3-slice(가로 또는 세로 전용) 로도 동작한다.
+        internal static void DrawNineSlice(Graphics g, Bitmap sprite, RectangleF rect, int left, int right, int top, int bottom)
+        {
+            int sw = sprite.Width, sh = sprite.Height;
+            left = Math.Max(0, Math.Min(left, sw));
+            right = Math.Max(0, Math.Min(right, sw - left));
+            top = Math.Max(0, Math.Min(top, sh));
+            bottom = Math.Max(0, Math.Min(bottom, sh - top));
+
+            float dl = Math.Min(left, rect.Width / 2f);
+            float dr = Math.Min(right, rect.Width / 2f);
+            float dt = Math.Min(top, rect.Height / 2f);
+            float db = Math.Min(bottom, rect.Height / 2f);
+
+            float[] sx = { 0, left, sw - right, sw };
+            float[] sy = { 0, top, sh - bottom, sh };
+            float[] dx = { rect.X, rect.X + dl, rect.X + rect.Width - dr, rect.X + rect.Width };
+            float[] dy = { rect.Y, rect.Y + dt, rect.Y + rect.Height - db, rect.Y + rect.Height };
+
+            for (int row = 0; row < 3; row++)
+            {
+                float sH = sy[row + 1] - sy[row], dH = dy[row + 1] - dy[row];
+                if (sH <= 0 || dH <= 0) continue;
+                for (int col = 0; col < 3; col++)
+                {
+                    float sW = sx[col + 1] - sx[col], dW = dx[col + 1] - dx[col];
+                    if (sW <= 0 || dW <= 0) continue;
+                    g.DrawImage(sprite, new RectangleF(dx[col], dy[row], dW, dH), new RectangleF(sx[col], sy[row], sW, sH), GraphicsUnit.Pixel);
+                }
+            }
         }
     }
 

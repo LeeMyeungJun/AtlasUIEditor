@@ -1,0 +1,64 @@
+{
+  "RootNode": {
+    "Id": "root_panel",
+    "Name": "MainCanvas",
+    "Type": "Rect",
+    "X": 0,
+    "Y": 0,
+    "Width": 800,
+    "Height": 600,
+    "ColorHex": "#2D3748",
+    "ImageUrl": "",
+    "Children": [
+      {
+        "Id": "top_bar",
+        "Name": "HeaderBackground",
+        "Type": "Rect",
+        "X": 0,
+        "Y": 0,
+        "Width": 800,
+        "Height": 60,
+        "ColorHex": "#1A202C",
+        "ImageUrl": "",
+        "Children": [
+          {
+            "Id": "logo_img",
+            "Name": "AppLogo",
+            "Type": "Image",
+            "X": 20,
+            "Y": 10,
+            "Width": 40,
+            "Height": 40,
+            "ColorHex": "#FFFFFF",
+            "ImageUrl": "https://via.placeholder.com/40",
+            "Children": []
+          }
+        ]
+      },
+      {
+        "Id": "btn_submit",
+        "Name": "ConfirmButton",
+        "Type": "Rect",
+        "X": 350,
+        "Y": 480,
+        "Width": 120,
+        "Height": 45,
+        "ColorHex": "#3182CE",
+        "ImageUrl": "",
+        "Children": []
+      },
+      {
+        "Id": "character_avatar",
+        "Name": "PlayerAvatar",
+        "Type": "Image",
+        "X": 300,
+        "Y": 150,
+        "Width": 200,
+        "Height": 200,
+        "ColorHex": "#FFFFFF",
+        "ImageUrl": "https://via.placeholder.com/200",
+        "Children": []
+      }
+    ]
+  }
+}
