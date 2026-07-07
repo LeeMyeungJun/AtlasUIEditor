@@ -567,10 +567,11 @@ namespace AtlasUIEditor
         private string atlasJsonPath;
         private string currentLayoutPath;
 
-        private readonly Dictionary<string, AtlasSprite> atlasSprites =
-            new Dictionary<string, AtlasSprite>(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, Bitmap> spriteCache =
-            new Dictionary<string, Bitmap>(StringComparer.OrdinalIgnoreCase);
+        // 대소문자 무시 비교자를 쓰면 "Icon.png"/"icon.png"처럼 이름만 다른 실제 리소스가
+        // 같은 키로 취급되어 조용히 덮어써지므로(atlas.json 개수보다 적게 로드됨), 이름은
+        // 원본 그대로(대소문자 구분) 비교한다.
+        private readonly Dictionary<string, AtlasSprite> atlasSprites = new Dictionary<string, AtlasSprite>();
+        private readonly Dictionary<string, Bitmap> spriteCache = new Dictionary<string, Bitmap>();
 
         public MainForm()
         {
@@ -839,15 +840,39 @@ namespace AtlasUIEditor
                 var list = JsonSerializer.Deserialize<List<AtlasSprite>>(text, opts) ?? new List<AtlasSprite>();
 
                 atlasSprites.Clear();
+                int skippedNoName = 0, duplicateName = 0, outOfBounds = 0;
                 foreach (var s in list)
-                    if (!string.IsNullOrEmpty(s.Name))
-                        atlasSprites[s.Name] = s;
+                {
+                    if (string.IsNullOrEmpty(s.Name)) { skippedNoName++; continue; }
+                    if (atlasSprites.ContainsKey(s.Name)) duplicateName++;
+                    if (atlasImage != null && (s.X + s.Width > atlasImage.Width || s.Y + s.Height > atlasImage.Height))
+                        outOfBounds++;
+                    atlasSprites[s.Name] = s;
+                }
 
                 AtlasRegistry.SpriteNames = atlasSprites.Keys.OrderBy(k => k).ToList();
                 spriteCache.Clear();
                 atlasJsonPath = ofd.FileName;
 
-                SetStatus($"아틀라스 정보 로드 완료: {Path.GetFileName(ofd.FileName)} (스프라이트 {list.Count}개)");
+                // 이름은 다르지만 아틀라스 내 같은 픽셀 영역(x,y,width,height)을 가리키는 경우
+                // (텍스처 패커가 중복 이미지를 하나의 영역으로 합치고 여러 이름을 매핑하는 경우 흔함) 탐지
+                int uniqueRectCount = atlasSprites.Values
+                    .Select(s => (s.X, s.Y, s.Width, s.Height))
+                    .Distinct()
+                    .Count();
+
+                var warnings = new List<string>();
+                if (skippedNoName > 0) warnings.Add($"이름 없음 {skippedNoName}개 제외");
+                if (duplicateName > 0) warnings.Add($"이름 중복 {duplicateName}개 덮어씀");
+                if (outOfBounds > 0) warnings.Add($"이미지 범위 초과 {outOfBounds}개(그려지지 않음)");
+                if (uniqueRectCount < atlasSprites.Count)
+                    warnings.Add($"서로 다른 이름 {atlasSprites.Count}개가 실제로는 {uniqueRectCount}개의 영역만 가리킴(같은 그림을 여러 이름이 공유)");
+                var warningText = warnings.Count > 0 ? " - " + string.Join(", ", warnings) : "";
+
+                SetStatus($"아틀라스 정보 로드 완료: {Path.GetFileName(ofd.FileName)} (JSON {list.Count}개 중 {atlasSprites.Count}개 로드{warningText})");
+                if (warnings.Count > 0)
+                    MessageBox.Show($"JSON {list.Count}개 중 {atlasSprites.Count}개 로드됨:\n" + string.Join("\n", warnings),
+                        "아틀라스 로드 경고", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 canvas.Invalidate();
             }
             catch (Exception ex)
