@@ -114,10 +114,10 @@ namespace AtlasUIEditor
         public string Id { get; set; } = "node_" + Guid.NewGuid().ToString("N").Substring(0, 8);
         public string Name { get; set; } = "NewNode";
         public string Type { get; set; } = "Rect";     // Rect / Panel / Canvas / Image / Button / Text 등
-        public int X { get; set; }
-        public int Y { get; set; }
-        public int Width { get; set; } = 100;
-        public int Height { get; set; } = 100;
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Width { get; set; } = 100;
+        public float Height { get; set; } = 100;
 
         // 색상이 지정되지 않은 노드는 빈 문자열로 유지되어야 "채우지 않고 외곽선만" 그릴 수 있다.
         // (기본값을 회색으로 두면, ColorHex가 없는 JSON을 불러올 때 모든 노드가 불투명 회색으로
@@ -232,28 +232,28 @@ namespace AtlasUIEditor
         }
 
         [Category("Transform"), Description("부모 기준 상대 X 좌표")]
-        public int X
+        public float X
         {
             get => _node.X;
             set { _node.X = value; _canvas.UpdateScrollSize(); _canvas.Invalidate(); }
         }
 
         [Category("Transform"), Description("부모 기준 상대 Y 좌표")]
-        public int Y
+        public float Y
         {
             get => _node.Y;
             set { _node.Y = value; _canvas.UpdateScrollSize(); _canvas.Invalidate(); }
         }
 
         [Category("Transform")]
-        public int Width
+        public float Width
         {
             get => _node.Width;
             set { _node.Width = Math.Max(1, value); _canvas.UpdateScrollSize(); _canvas.Invalidate(); }
         }
 
         [Category("Transform")]
-        public int Height
+        public float Height
         {
             get => _node.Height;
             set { _node.Height = Math.Max(1, value); _canvas.UpdateScrollSize(); _canvas.Invalidate(); }
@@ -340,7 +340,7 @@ namespace AtlasUIEditor
 
         private bool _dragging;
         private PointF _dragStartLogical;
-        private int _dragOrigX, _dragOrigY;
+        private float _dragOrigX, _dragOrigY;
 
         public CanvasPanel()
         {
@@ -404,8 +404,8 @@ namespace AtlasUIEditor
             var logical = ScreenToLogical(e.Location);
             float dx = logical.X - _dragStartLogical.X;
             float dy = logical.Y - _dragStartLogical.Y;
-            SelectedNode.X = _dragOrigX + (int)Math.Round(dx);
-            SelectedNode.Y = _dragOrigY + (int)Math.Round(dy);
+            SelectedNode.X = _dragOrigX + dx;
+            SelectedNode.Y = _dragOrigY + dy;
             NodeChanged?.Invoke();
             Invalidate();
         }
